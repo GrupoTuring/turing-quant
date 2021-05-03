@@ -432,3 +432,39 @@ def plot_allocation(dictionary):
     values = list(dictionary.values())
     fig = px.pie(values=values, names=labels)
     fig.show()
+
+
+def cagr(returns, time_scale=252):
+    """
+    Calcula o CAGR que é a taxa composta de crescimento anual.
+    Args:
+        returns (pd.Series): série de retornos para a qual será calculado o drawdown.
+        time_scale (int): fator de escala do cagr, que é o número de amostras em um ano. Caso fosse uma série temporal diária: 252; série temporal mensal: 12
+    Returns:
+        float: cagr do ativo.
+    """
+
+    cumulative_return = (1 + returns).cumprod()[-1]
+
+    return (cumulative_return ** (1/(returns.shape[-1] / time_scale)) - 1)
+
+
+def mar_ratio(returns, time_window, time_scale=252):
+    """
+    Calcula e plota o drawdown percentual para uma série de retornos.
+    Args:
+        returns (pd.Series): série de retornos para a qual será calculado o mar ratio.
+        time_window (float): janela de tempo que o mar ratio será calculado em relação a escala de tempo. time_window = 3 e time_scale = 252 denota uma janela de 3 anos (Calmar Ratio).
+        time_scale (int): fator de escala do mar ratio, que é o número de amostras em um ano. Caso fosse uma série temporal diária: 252; série temporal mensal: 12
+    Returns:
+        float: valor do mar ratio do ativo
+    """
+
+    returns_window = returns[-time_window * time_scale:]
+
+    drawdowns = drawdown(returns_window)
+    max_drawdown = abs(drawdowns).max()
+
+    mar_ratio = returns_window.mean() * time_scale / max_drawdown
+
+    return mar_ratio
